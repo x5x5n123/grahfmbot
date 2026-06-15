@@ -29,12 +29,36 @@ def send_welcome(message):
 *رقم 1 بلا منازع 💯*
 ⚔️ ═════════ 👑 ═════════ ⚔️
 
-*وصلت لعرش الخدمات الرقمية* 😎
+*وصلت لعرش الخدمات الرقمية* 😎👇
 *هنا الملوك والأساطير فقط*
 
 *خدماتنا الجبارة:*
-- أرقام وهمية VIP لكل دول العالم
+- *أرقام وهمية VIP* لكل دول العالم
 - رشق متابعين يخليك ترند بدقايق
+- فك حظر المستحيل عندنا سهل
+- حظر فوري لأي مزعج أو سبام
+
+*الجراح شبل إب = هيبة + ثقة + ضمان*
+*الجودة*
+"""
+    
+    bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
+
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback(call):
+    if call.data == 'numbers':
+        bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
+    elif call.data == 'boost':
+        bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
+    elif call.data == 'unban':
+        bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
+    elif call.data == 'ban':
+        bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
+    elif call.data == 'offers':
+        bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
+
+print("Bot is running...")
+bot.infinity_polling()- رشق متابعين يخليك ترند بدقايق
 - فك حظر المستحيل عندنا سهل
 - حظر فوري لأي مزعج أو سبام
 
@@ -61,7 +85,7 @@ bot.infinity_polling() رشق متابعين يخليك ترند بدقايق
  فك حظر المستحيل عندنا سهل
  حظر فوري لأي مزعج أو سبام
 
-*الجراح شبل إب = هيبة + ثقة + ضمان* 🛡️
+*الجراح شبل إب = هيبة + ثقة + ضمان* 
 *الجودة*
 ''', reply_markup=markup)
 
@@ -73,7 +97,7 @@ bot.infinity_polling()
  فك حظر المستحيل عندنا سهل
  حظر فوري لأي مزعج أو سبام
 
-*الجراح شبل إب = هيبة + ثقة + ضمان* 🛡️
+*الجراح شبل إب = هيبة + ثقة + ضمان* 
 *الجودة*
 ''', reply_markup=markup)
 
