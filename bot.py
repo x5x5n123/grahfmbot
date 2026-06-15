@@ -9,13 +9,13 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_USERNAME = '@x5x5n'
 
 # أمر start/
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'ابدأ'])
 def send_welcome(message):
     name = message.from_user.first_name
     markup = types.InlineKeyboardMarkup(row_width=2)
 
     btn1 = types.InlineKeyboardButton('📱💯 أرقام VIP', callback_data='numbers')
-    btn2 = types.InlineKeyboardButton('🚀🔥 رشق ملوكي', callback_data='boost')
+    btn2 = types.InlineKeyboardButton('🚀🔥 رشق ملكي ', callback_data='boost')
     btn3 = types.InlineKeyboardButton('🔓👑 فك الحظر', callback_data='unban')
     btn4 = types.InlineKeyboardButton('⛔⚔️ حظر تأديبي', callback_data='ban')
     btn5 = types.InlineKeyboardButton('💬🫡 تواصل مع الزعيم', url='https://t.me/x5x5n')
@@ -23,23 +23,27 @@ def send_welcome(message):
 
     markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
 
-    bot.reply_to(message, f'''
-🔥 *حياك الله يا {name}* 🔥
+        bot.reply_to(message, f'''
+🔥 *يا حياك الله {name}* 🔥
 
-⚔️ ════════ 👑 ════════ ⚔️
-   *بوت الجراح شبل إب*
-  *أقوى بوت في اليمن 🇾🇪*
-  *رقم 1 بلا منازع 💯*
-⚔️ ════════ 👑 ════════ ⚔️
+⚔️ ═════════ 👑 ═════════ ⚔️
+*بوت الجراح شبل إب*
+*أقوى بوت في اليمن 🇾🇪*
+*رقم 1 بلا منازع 💯*
+⚔️ ═════════ 👑 ═════════ ⚔️
 
-*وصلت لعرش الخدمات الرقمية* 😎🫡
+*وصلت لعرش الخدمات الرقمية* 😎👇
 *هنا الملوك والأساطير فقط*
 
 *خدماتنا الجبارة:*
 💎 *أرقام وهمية VIP* لكل دول العالم
-💎 *رشق متابعين* يخليك ترند بدقايق
-💎 *فك حظر* المستحيل عندنا سهل
-💎 *حظر فوري* لأي مزعج أو سبام
+💎 رشق متابعين يخليك ترند بدقايق
+💎 فك حظر المستحيل عندنا سهل
+💎 حظر فوري لأي مزعج أو سبام
 
 *الجراح شبل إب = هيبة + ثقة + ضمان* 🛡️
-*الجودة
+*الجودة*
+''', reply_markup=markup)
+
+print("Bot is running...")
+bot.infinity_polling()
