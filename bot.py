@@ -20,7 +20,23 @@ def send_welcome(message):
     
     markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     
-    welcome_text = f"🔥 *يا حياك الله {name}* 🔥\n\n⚔️ ═════════ 👑 ═════════ ⚔️\n*بوت الجراح شبل إب*\n*أقوى بوت في اليمن 🇾🇪*\n*رقم 1 بلا منازع 💯*\n⚔️ ═════════ 👑 ═════════ ⚔️\n\n*وصلت لعريش الخدمات الرقمية* 😎👇\n*هنا الملوك والأساطير فقط*\n\n*خدماتنا الجبارة:*\n- *أرقام وهمية VIP* لكل دول العالم\n- رشق متابعين يخليك ترند بدقايق\n- فك حظر المستحيل عندنا سهل\n- حظر فوري لأي مزعج أو سبام\n\n*الجراح شبل إب = هيبة + ثقة + ضمان*\n*الجودة*"
+    text1 = "🔥 *يا حياك الله " + name + "* 🔥\n\n"
+    text2 = "⚔️ ═════════ 👑 ═════════ ⚔️\n"
+    text3 = "*بوت الجراح شبل إب*\n"
+    text4 = "*أقوى بوت في اليمن 🇾🇪*\n"
+    text5 = "*رقم 1 بلا منازع 💯*\n"
+    text6 = "⚔️ ═════════ 👑 ═════════ ⚔️\n\n"
+    text7 = "*وصلت لعرش الخدمات الرقمية* 😎👇\n"
+    text8 = "*هنا الملوك والأساطير فقط*\n\n"
+    text9 = "*خدماتنا الجبارة:*\n"
+    text10 = "- *أرقام وهمية VIP* لكل دول العالم\n"
+    text11 = "- رشق متابعين يخليك ترند بدقايق\n"
+    text12 = "- فك حظر المستحيل عندنا سهل\n"
+    text13 = "- حظر فوري لأي مزعج أو سبام\n\n"
+    text14 = "*الجراح شبل إب = هيبة + ثقة + ضمان*\n"
+    text15 = "*الجودة*"
+    
+    welcome_text = text1 + text2 + text3 + text4 + text5 + text6 + text7 + text8 + text9 + text10 + text11 + text12 + text13 + text14 + text15
     
     bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
@@ -29,12 +45,7 @@ def handle_callback(call):
     bot.answer_callback_query(call.id, "قريباً... تواصل مع @x5x5n")
 
 print("Bot is running...")
-bot.infinity_polling()- رشق متابعين يخليك ترند بدقايق
-- فك حظر المستحيل عندنا سهل
-- حظر فوري لأي مزعج أو سبام
-
-*الجراح شبل إب = هيبة + ثقة + ضمان*
-*الجودة*
+bot.infinity_polling()*الجودة*
 """
     
     bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
