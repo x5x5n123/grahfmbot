@@ -10,7 +10,6 @@ app = Flask(__name__)
 def home():
     return "Bot is alive"
 
-# قائمة الدول كاملة مع الأسعار
 COUNTRIES = {
     "page1": [
         ["🇺🇸 امريكا - $3 | 3 شهور ضمان", "usa"],
@@ -95,20 +94,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
         [InlineKeyboardButton("• 👥 الرشق والحسابات التليجرام •", callback_data="boost")],
-        [
-            InlineKeyboardButton("🚀 عروض تليجرام 🔥", callback_data="tg_offers"),
-            InlineKeyboardButton("🎁 عروض الواتساب 🚀", callback_data="wa_offers")
-        ],
+        [InlineKeyboardButton("🚀 عروض تليجرام 🔥", callback_data="tg_offers"), InlineKeyboardButton("🎁 عروض الواتساب 🚀", callback_data="wa_offers")],
         [InlineKeyboardButton("• 📞 شراء أرقام لتطبيقات اخرا 📞 •", callback_data="numbers")],
-        [
-            InlineKeyboardButton("💰 شحن حسابك •", callback_data="charge"),
-            InlineKeyboardButton("• 📋 سجل الحساب ✔️", callback_data="history")
-        ],
+        [InlineKeyboardButton("💰 شحن حسابك •", callback_data="charge"), InlineKeyboardButton("• 📋 سجل الحساب ✔️", callback_data="history")],
         [InlineKeyboardButton("• 💬 الاكثر توفراً واتساب •", callback_data="whatsapp")],
-        [
-            InlineKeyboardButton("⚠️ طلب المساعدة •", callback_data="help"),
-            InlineKeyboardButton("• 🌟 خدمات ومميزات 🌟", callback_data="features")
-        ],
+        [InlineKeyboardButton("⚠️ طلب المساعدة •", callback_data="help"), InlineKeyboardButton("• 🌟 خدمات ومميزات 🌟", callback_data="features")],
         [InlineKeyboardButton("• 💵 مشاركة رابط الدعوة الخاص بك 🔵", callback_data="ref")]
     ]
 
@@ -133,6 +123,7 @@ async def show_countries(update: Update, context: ContextTypes.DEFAULT_TYPE, pag
     """
 
     keyboard = []
+    # هذا السطر اللي كان غلط وتم تصحيحه
     for country_name, country_code in COUNTRIES[page]:
         keyboard.append([InlineKeyboardButton(country_name, callback_data=f"buy_{country_code}")])
 
@@ -142,4 +133,69 @@ async def show_countries(update: Update, context: ContextTypes.DEFAULT_TYPE, pag
     current_index = pages.index(page)
 
     if current_index > 0:
-        nav
+        nav_buttons.append(InlineKeyboardButton("⬅️ السابق", callback_data=f"countries_{pages[current_index-1]}"))
+    if current_index < len(pages) - 1:
+        nav_buttons.append(InlineKeyboardButton("التالي ➡️", callback_data=f"countries_{pages[current_index+1]}"))
+
+    if nav_buttons:
+        keyboard.append(nav_buttons)
+
+    keyboard.append([InlineKeyboardButton("🔙 رجوع للقائمة الرئيسية", callback_data="main_menu")])
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(text, reply_markup=reply_markup)
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+
+    if data == "main_menu":
+        await start(update, context)
+
+    elif data == "numbers":
+        await show_countries(update, context, "page1")
+
+    elif data.startswith("countries_"):
+        page = data.split("_")[1]
+        await show_countries(update, context, page)
+
+    elif data.startswith("buy_"):
+        country_code = data.split("_")[1]
+        await query.edit_message_text(
+            text=f"✅ تم اختيار الدولة: {country_code.upper()}\n\n🔄 جاري تجهيز الرقم...\n💰 سيتم خصم المبلغ من رصيدك\n\n⚠️ هذه الميزة تحت التطوير قريباً",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع للدول", callback_data="numbers")]])
+        )
+
+    elif data == "charge":
+        await query.edit_message_text(
+            text="💰 شحن الرصيد:\n\n1️⃣ تحويل USDT\n2️⃣ بايير\n3️⃣ بيرفكت موني\n\nتواصل مع الدعم: @YourUsername",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]])
+        )
+
+    elif data == "help":
+        await query.edit_message_text(
+            text="⚠️ للدعم الفني والمساعدة:\n\n👤 @YourUsername\n📞 سيتم الرد خلال 5 دقائق",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]])
+        )
+
+    else:
+        await query.edit_message_text(
+            text="🔄 هذه الميزة تحت التطوير قريباً...",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]])
+        )
+
+def run_bot():
+    TOKEN = os.environ.get("BOT_TOKEN")
+    if not TOKEN:
+        print("Error: BOT_TOKEN not found")
+        return
+    application = ApplicationBuilder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.run_polling()
+
+if __name__ == '__main__':
+    threading.Thread(target=run_bot).start()
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
