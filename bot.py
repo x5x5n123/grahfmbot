@@ -1,177 +1,145 @@
-import telebot
-from telebot import types
+import os
+import threading
+from flask import Flask
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-TOKEN = "6493655843:AAGDKLxZoqJ61JquPA5CewB24zqyvRTQG-8"
-bot = telebot.TeleBot(TOKEN)
+app = Flask(__name__)
 
-ADMIN_USERNAME = '@x5x5n'
+@app.route('/')
+def home():
+    return "Bot is alive"
 
-# ========== القائمة الرئيسية ==========
-@bot.message_handler(commands=['start'])
-def start(message):
-    name = message.from_user.first_name
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        types.InlineKeyboardButton('🔥 ارقام VIP', callback_data='numbers'),
-        types.InlineKeyboardButton('⚡ رشق ملوكي', callback_data='boost'),
-        types.InlineKeyboardButton('🔓 فك الحظر', callback_data='unban'),
-        types.InlineKeyboardButton('🔨 حظر تأديبي', callback_data='ban'),
-        types.InlineKeyboardButton('💎 العروض الخاصة', callback_data='offers'),
-        types.InlineKeyboardButton('👑 تواصل مع الزعيم', url='https://t.me/x5x5n')
-    )
-    text = "🔥 *يا حياك الله " + name + "* 🔥\n\n"
-    text = text + "⚔️ ═════════ 👑 ═════════ ⚔️\n"
-    text = text + "*بوت الجراح شبل إب*\n"
-    text = text + "*أقوى بوت في اليمن 🇾🇪*\n"
-    text = text + "*رقم 1 بلا منازع 💯*\n"
-    text = text + "⚔️ ═════════ 👑 ═════════ ⚔️\n\n"
-    text = text + "*وصلت لعريش الخدمات الرقمية* 😎👇\n"
-    text = text + "*هنا الملوك والأساطير فقط*\n\n"
-    text = text + "*الجراح شبل إب = هيبة + ثقة + ضمان*"
-    bot.send_message(message.chat.id, text, reply_markup=markup, parse_mode='Markdown')
+# قائمة الدول كاملة مع الأسعار
+COUNTRIES = {
+    "page1": [
+        ["🇺🇸 امريكا - $3 | 3 شهور ضمان", "usa"],
+        ["🇬🇧 بريطانيا - $4 | VIP", "uk"],
+        ["🇷🇺 روسيا - $2.5 | تفعيل فوري", "ru"],
+        ["🇸🇦 السعودية - $5 | خاص واتساب", "sa"],
+        ["🇦🇪 الامارات - $4.5", "ae"],
+        ["🇰🇼 الكويت - $4", "kw"],
+        ["🇶🇦 قطر - $4", "qa"],
+        ["🇧🇭 البحرين - $3.5", "bh"],
+    ],
+    "page2": [
+        ["🇴🇲 عمان - $3.5", "om"],
+        ["🇪🇬 مصر - $2", "eg"],
+        ["🇾🇪 اليمن - $2.5", "ye"],
+        ["🇯🇴 الأردن - $2.5", "jo"],
+        ["🇱🇧 لبنان - $3", "lb"],
+        ["🇮🇶 العراق - $2", "iq"],
+        ["🇲🇦 المغرب - $2", "ma"],
+        ["🇩🇿 الجزائر - $2", "dz"],
+    ],
+    "page3": [
+        ["🇹🇳 تونس - $2", "tn"],
+        ["🇱🇾 ليبيا - $2.5", "ly"],
+        ["🇸🇩 السودان - $2", "sd"],
+        ["🇸🇾 سوريا - $3", "sy"],
+        ["🇵🇸 فلسطين - $2.5", "ps"],
+        ["🇹🇷 تركيا - $2", "tr"],
+        ["🇮🇷 ايران - $2.5", "ir"],
+        ["🇵🇰 باكستان - $1.5", "pk"],
+    ],
+    "page4": [
+        ["🇮🇳 الهند - $1.2", "in"],
+        ["🇧🇩 بنجلاديش - $1.5", "bd"],
+        ["🇮🇩 اندونيسيا - $1.8", "id"],
+        ["🇲🇾 ماليزيا - $2", "my"],
+        ["🇵🇭 الفلبين - $1.5", "ph"],
+        ["🇹🇭 تايلاند - $2", "th"],
+        ["🇻🇳 فيتنام - $1.8", "vn"],
+        ["🇨🇳 الصين - $2.5", "cn"],
+    ],
+    "page5": [
+        ["🇯🇵 اليابان - $3", "jp"],
+        ["🇰🇷 كوريا الجنوبية - $3", "kr"],
+        ["🇩🇪 المانيا - $3.5", "de"],
+        ["🇫🇷 فرنسا - $3.5", "fr"],
+        ["🇪🇸 اسبانيا - $3", "es"],
+        ["🇮🇹 ايطاليا - $3", "it"],
+        ["🇳🇱 هولندا - $3", "nl"],
+        ["🇧🇪 بلجيكا - $3", "be"],
+    ],
+    "page6": [
+        ["🇨🇦 كندا - $3.5", "ca"],
+        ["🇲🇽 المكسيك - $2.5", "mx"],
+        ["🇧🇷 البرازيل - $2.5", "br"],
+        ["🇦🇷 الارجنتين - $2.5", "ar"],
+        ["🇿🇦 جنوب افريقيا - $2", "za"],
+        ["🇳🇬 نيجيريا - $1.5", "ng"],
+        ["🇰🇪 كينيا - $1.5", "ke"],
+        ["🌍 باقي الدول - $2", "other"],
+    ]
+}
 
-# ========== معالج الأزرار ==========
-@bot.callback_query_handler(func=lambda call: True)
-def callback(call):
-    if call.data == 'main_menu':
-        start(call.message)
-    
-    # 1. قائمة الأرقام
-    elif call.data == 'numbers':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('🇺🇸 امريكا - 3$ | 3 شهور ضمان', callback_data='num_us'),
-            types.InlineKeyboardButton('🇬🇧 بريطانيا - 4$ | VIP', callback_data='num_uk'),
-            types.InlineKeyboardButton('🇷🇺 روسيا - 2.5$ | تفعيل فوري', callback_data='num_ru'),
-            types.InlineKeyboardButton('🇸🇦 السعودية - 5$ | خاص واتساب', callback_data='num_sa'),
-            types.InlineKeyboardButton('🌍 دول أخرى - 2$ وطالع', callback_data='num_other'),
-            types.InlineKeyboardButton('🔙 رجوع للقائمة الرئيسية', callback_data='main_menu')
-        )
-        text = "🔥 *قسم الأرقام الوهمية VIP* 🔥\n\n"
-        text = text + "⚜️ *أرقام نظيفة 100% غير محروقة*\n"
-        text = text + "⚜️ *ضمان استبدال لو ما اشتغل*\n"
-        text = text + "⚜️ *تفعيل جميع التطبيقات: واتساب + تيليجرام + انستا*\n\n"
-        text = text + "*اختر الدولة المطلوبة:* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
-    
-    # 2. قائمة الرشق
-    elif call.data == 'boost':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('📸 انستقرام', callback_data='boost_insta'),
-            types.InlineKeyboardButton('🎵 تيك توك', callback_data='boost_tiktok'),
-            types.InlineKeyboardButton('✈️ تيليجرام', callback_data='boost_telegram'),
-            types.InlineKeyboardButton('🔙 رجوع للقائمة الرئيسية', callback_data='main_menu')
-        )
-        text = "⚡ *قسم الرشق الملكي* ⚡\n\n"
-        text = text + "👑 *متابعين حقيقيين + ضمان تعويض*\n"
-        text = text + "👑 *بدء التنفيذ خلال 5 دقايق*\n"
-        text = text + "👑 *أرخص سعر بالسوق + جودة أسطورية*\n\n"
-        text = text + "*اختر المنصة:* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    first_name = user.first_name
+    user_id = user.id
+    bot_name = "جراف | GRAHF"
 
-    # 2.1 رشق انستقرام
-    elif call.data == 'boost_insta':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('1000 متابع = 2$ 🔥', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('5000 متابع = 8$ 💎 عرض', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('10K متابع = 15$ 👑 الأقوى', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('100K لايك = 5$ ⚡', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع', callback_data='boost')
-        )
-        text = "📸 *رشق انستقرام* 📸\n\n"
-        text = text + "*الأسعار:*\n"
-        text = text + "▪️ متابعين عرب متفاعلين + ضمان 30 يوم\n"
-        text = text + "▪️ لايكات + مشاهدات ستوري + تعليقات\n"
-        text = text + "▪️ *ملاحظة:* الحساب لازم يكون عام\n\n"
-        text = text + "*للطلب اضغط على الباقة وتواصل مع الزعيم* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+    text = f"""
+🏰 - مرحبا بك في القائمة الرئيسية ✅
+⚜️ - لدى بوت {bot_name} | SMS العالمي
 
-    # 2.2 رشق تيك توك
-    elif call.data == 'boost_tiktok':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('1000 متابع = 2.5$ 🔥', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('10K لايك = 3$ 💎', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('100K مشاهدة = 1$ ⚡ جنون', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع', callback_data='boost')
-        )
-        text = "🎵 *رشق تيك توك* 🎵\n\n"
-        text = text + "*عروض اليوم:*\n"
-        text = text + "▪️ متابعين يرفعونك اكسبلور\n"
-        text = text + "▪️ لايكات سريعة ما تنقص\n"
-        text = text + "▪️ مشاهدات تخلي فيديوك ترند\n\n"
-        text = text + "*اضغط للطلب المباشر* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+- اهلا بك عزيزي : {first_name} ❤️
+- حسابك : {user_id}@GRAHF.com 📮
+- رصيد حسابك الان : 0.0 $ 💰
+- اخر الاخبار ⬇️
 
-    # 2.3 رشق تيليجرام
-    elif call.data == 'boost_telegram':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('1000 عضو = 3$ 👑 قنوات', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('1000 عضو = 4$ 🔥 قروبات', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('10K مشاهدة = 1$ ⚡ للبوست', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع', callback_data='boost')
-        )
-        text = "✈️ *رشق تيليجرام* ✈️\n\n"
-        text = text + "*الخدمات:*\n"
-        text = text + "▪️ أعضاء قنوات + قروبات ضمان عدم النقص\n"
-        text = text + "▪️ مشاهدات بوست آخر 5 منشورات\n"
-        text = text + "▪️ تفاعل + تصويت\n\n"
-        text = text + "*للطلب الفوري* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+❤️😍 اسعار الشحن في البوت انقر للعرض
+- تحكم الان بضغط على الازرار بلاسفل ⬇️
+    """
 
-    # 3. فك الحظر
-    elif call.data == 'unban':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('🔓 واتساب - 10$ | مضمون', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('📸 انستقرام - 15$ | حتى المعطل', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('✈️ تيليجرام - 8$ | فوري', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع للقائمة الرئيسية', callback_data='main_menu')
-        )
-        text = "🔓 *قسم فك الحظر* 🔓\n\n"
-        text = text + "⚠️ *نفك المستحيل بإذن الله*\n"
-        text = text + "⚠️ *الدفع بعد الفك للثقة*\n"
-        text = text + "⚠️ *حظر أرقام + حسابات + أجهزة*\n\n"
-        text = text + "*اختر نوع الحظر:* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+    keyboard = [
+        [InlineKeyboardButton("• 👥 الرشق والحسابات التليجرام •", callback_data="boost")],
+        [
+            InlineKeyboardButton("🚀 عروض تليجرام 🔥", callback_data="tg_offers"),
+            InlineKeyboardButton("🎁 عروض الواتساب 🚀", callback_data="wa_offers")
+        ],
+        [InlineKeyboardButton("• 📞 شراء أرقام لتطبيقات اخرا 📞 •", callback_data="numbers")],
+        [
+            InlineKeyboardButton("💰 شحن حسابك •", callback_data="charge"),
+            InlineKeyboardButton("• 📋 سجل الحساب ✔️", callback_data="history")
+        ],
+        [InlineKeyboardButton("• 💬 الاكثر توفراً واتساب •", callback_data="whatsapp")],
+        [
+            InlineKeyboardButton("⚠️ طلب المساعدة •", callback_data="help"),
+            InlineKeyboardButton("• 🌟 خدمات ومميزات 🌟", callback_data="features")
+        ],
+        [InlineKeyboardButton("• 💵 مشاركة رابط الدعوة الخاص بك 🔵", callback_data="ref")]
+    ]
 
-    # 4. حظر تأديبي
-    elif call.data == 'ban':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('🔨 حظر واتساب - 7$ | يطير بدقايق', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔨 حظر انستا - 12$ | نهائي', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع للقائمة الرئيسية', callback_data='main_menu')
-        )
-        text = "🔨 *قسم الحظر التأديبي* 🔨\n\n"
-        text = text + "⚔️ *للمزعجين والنصابين والسبام فقط*\n"
-        text = text + "⚔️ *نستخدم طرق خاصة ما تنفك*\n"
-        text = text + "⚔️ *الدفع مقدم + إثبات قبل وبعد*\n\n"
-        text = text + "*اختر المنصة:* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # 5. العروض الخاصة
-    elif call.data == 'offers':
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton('🎁 باقة التاجر 50$ = رقم + 10K متابع', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🎁 باقة المشاهير 100$ = شامل كل شي', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('👑 تواصل مع الزعيم للعروض الخاصة', url='https://t.me/x5x5n'),
-            types.InlineKeyboardButton('🔙 رجوع للقائمة الرئيسية', callback_data='main_menu')
-        )
-        text = "💎 *العروض الخاصة - لفترة محدودة* 💎\n\n"
-        text = text + "*1. باقة التاجر 50$*\n"
-        text = text + "رقم امريكي VIP + 10K متابع انستا + 50K مشاهدة تيك توك\n\n"
-        text = text + "*2. باقة المشاهير 100$*\n"
-        text = text + "رقم + 25K متابع انستا + 10K تيليجرام + فك حظر مجاني مرة\n\n"
-        text = text + "*للطلب اضغط على الباقة* 👇"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
+    if update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+    elif update.callback_query:
+        await update.callback_query.edit_message_text(text, reply_markup=reply_markup)
 
-    # ردود الأرقام
-    elif call.data.startswith('num_'):
-        bot.answer_callback_query(call.id, "للطلب اضغط زر التواصل مع الزعيم 👑", show_alert=True)
+async def show_countries(update: Update, context: ContextTypes.DEFAULT_TYPE, page="page1"):
+    query = update.callback_query
 
-bot.infinity_polling()
+    text = """
+🔥 قسم الأرقام الوهمية VIP
+
+أرقام نظيفة 100% غير محروقة ⚜️
+ضمان استبدال لو ما اشتغل ⚜️
+تفعيل جميع التطبيقات: واتساب + تيليجرام + انستا ⚜️
+
+👇 اختر الدولة المطلوبة:
+    """
+
+    keyboard = []
+    for country_name, country_code in COUNTRIES[page]:
+        keyboard.append([InlineKeyboardButton(country_name, callback_data=f"buy_{country_code}")])
+
+    # أزرار التنقل بين الصفحات
+    nav_buttons = []
+    pages = list(COUNTRIES.keys())
+    current_index = pages.index(page)
+
+    if current_index > 0:
+        nav
